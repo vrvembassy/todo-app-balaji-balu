@@ -1,21 +1,13 @@
 /* global TodoItem */ 
-	var STATUS_NONE = "none",
-		STATUS_COMPLETE = "complete";
-		ID_LAST = 3;
 
 ; (function(){
 
-	var itemsIndex = {
-		"1" : { id: "1", name: "Item 1", status: STATUS_NONE},
-		"2" : { id: "2", name: "Item 2", status: STATUS_COMPLETE},
-		"3" : { id: "3", name: "Item 3", status: STATUS_NONE},
-	};
-
-	var $input, $eraseBtn;
+	var ID_LAST = 4;
+	var items, $input, $eraseBtn;
 
 	document.addEventListener("DOMContentLoaded", function(event) {
 		console.log("DOM fully loaded and parsed");
-
+		Save.init(addHandler);
 		loadContent();
 	});
 
@@ -32,15 +24,14 @@
 		$loadContentBtn = document.getElementById("loadContent");
 
 		// display the existing todo items
-		TodoItems.init();
-		
-		TodoItems.displayItems(itemsIndex);
+		items = new TodoItems.Items({});
+		//items.displayItems();
 
 		//when new todo item is added
 		$input.addEventListener("keydown", addItem);
 		
 		$eraseBtn.addEventListener("click", eraseContent);
-		
+		document.querySelector("#save").addEventListener("click", saveContent);
 	}
 
 
@@ -59,7 +50,7 @@
 			return;
 		}
 
-		var item = {id: ""+ ++ID_LAST, name: itemText, status: STATUS_NONE};
+		var item = {id: ""+ ++ID_LAST, name: itemText, status: false};
 
 		//reset the textbox content
 		$input.value = "";
@@ -69,12 +60,16 @@
 			return;
 		}
 
-		itemsIndex[item.id] = item;
+		//itemsIndex[item.id] = item;
+		Save.add(item);
 
 		//refresh the DOM
-		TodoItems.displayItem(item);
+		//items.add(item);
 	}
 
+	function addHandler(item) {
+		items.add(item);
+	}
 
 	function eraseContent(e) {
 		console.log("erase content");
@@ -86,11 +81,15 @@
 		$input.removeEventListener("keydown", addItem);
 		
 		// unregister ul event listeners 
-		TodoItems.remove();
+		items.remove();
 
 		//reset the DOM content
 		document.querySelector(".container").innerHTML = "";
 	}	
+
+	function saveContent(e) {
+		console.log("Collection:", items.toJson());
+	}
 
 	function getHTML() {
 		var html = [], index = 0;
@@ -103,9 +102,23 @@
 		html[index++] = "</div>";
 		html[index++] = "<ul id='items'></ul>";
 		html[index++] = "<div class='footer'>";
+		html[index++] = "<button id='save'>Save</button>";
 		html[index++] = "<button id='eraseContent'>Erase the content</button>";
 		html[index++] = "</div>";
 		return html.join("");
 	}
 
+	function loadData() {
+/*		
+		return {
+			"1" : { id: "1", name: "Item 1", status: false},
+			"2" : { id: "2", name: "Item 2", status: true},
+			"3" : { id: "3", name: "Item 3", status: false},
+		};
+*/
+	}
+
+	function saveData(collection) {
+
+	}
 })();

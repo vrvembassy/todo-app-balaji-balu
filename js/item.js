@@ -1,37 +1,58 @@
+/** 
+ * Todo Model and View
+*/
 var TodoItem = (function(){
 
-	//display a new todo item 
-	function displayItem( item ) {
+	function Item(item) {
+		//data 
+		this.model = item;
 		
-		//console.log("DisplayItem", itemsNode, item);
+		this.handlers = [];
+		return this;
+	}
 
-		var nodeId = "item_" + item.id;
+	//display a new todo item 
+	Item.prototype.displayItem = function() {
+		
+		console.log("DisplayItem", this.model);
+
+		var nodeId = "item_" + this.model.id;
 
 		//create item node and append to the ul node	
 		var itemNode = document.createElement("div");
 		itemNode.id = nodeId; 
 		itemNode.classList.add("item_node");
-		if (item.status === STATUS_COMPLETE) {
+		if (this.model.status === true) {
 			itemNode.classList.add("complete");	
 		}
 
-		itemNode.addEventListener("mouseover", showItemControls);
-		itemNode.addEventListener("mouseout", hideItemControls);
+		this.handlers.push({type: "mouseenter", fn: showItemControls});
+		this.handlers.push({type: "mouseleave", fn: hideItemControls});
+
+		itemNode.addEventListener("mouseenter", showItemControls);
+		itemNode.addEventListener("mouseleave", hideItemControls);
 		
-		//itemNode.onfocusin = showItemControls;
-		//itemNode.onfocusout = hideItemControls;
-		//$items.addEventListener("focus", showItemControls, true);	
-		//$items.addEventListener("blur", hideItemControls, true);	
+		itemNode.innerHTML = setTemplate(nodeId, this.toJson());
+		this.node = itemNode;
 
-		itemNode.innerHTML = template(nodeId, item);
-
-		return itemNode;
+		return this;
 	}
 
+	function showItemControls(e) {
+		this.classList.add("active");
+	}
+
+	function hideItemControls(e) {
+		this.classList.remove("active");
+	}
+
+	Item.prototype.toJson = function(){
+		return this.model;
+	}
 
 	// delete an todo item 
-	function remove(node) {
-		console.log("delete item", node);
+	Item.prototype.remove = function() {
+		console.log("delete item");
 
 		var confirmation = confirm("Are you sure?")
 		if (confirmation == false) {
@@ -39,37 +60,31 @@ var TodoItem = (function(){
 		}
 
 		// unregister event handler
-		var itemNode = document.getElementById(node.getAttribute("parentId"))
+		this.handlers.forEach(function(handler){
+			document.removeEventListener(handler.type, handler.fn);
+		});
 
-		itemNode.onmouseout = null; 
-		itemNode.onmouseover = null;
-		itemNode.onfocusin = null;
-		itemNode.onfocusout = null;
-		
-		return itemNode;
+		// remove the DOM element
+		this.node.parentNode.removeChild(this.node);
+
+		return this;
 	}
 
 	//mark an todo item as complete
-	function setItemComplete(node) {
-
-		var index = node.getAttribute("itemId");
-		console.log("complete", node, index);
-
+	Item.prototype.changeStatus = function(){
+		//console.log("ChangeStatus", this);
+		
 		//update item status
-		itemsIndex[index].status = (itemsIndex[index].status === STATUS_COMPLETE) ? 
-												STATUS_NONE : STATUS_COMPLETE; 
+		this.model.status = !this.model.status;
 
-		var itemNode= document.getElementById(node.getAttribute("parentId"));
-		var cl = itemNode.classList; 
-		if (cl.contains('complete'))
-			itemNode.classList.remove("complete");
-		else 
-			itemNode.classList.add("complete");
+		this.node.classList.toggle("complete");
+
+		return this;
 	}
 
 
 	// Item component Template
-	function template(nodeId, item){
+	function setTemplate(nodeId, item) {
 		var html = [], index = 0;
 		
 		//construct the html string 
@@ -96,35 +111,10 @@ var TodoItem = (function(){
 		return html.join("");
 	}
 
-	//var currentElem = null;
-	function showItemControls(e) {
-		console.log("entered " + event.target.id + " from " + event.relatedTarget.id);
-/*		
-		var cl = e.target.classList; 
-		if (cl.contains("item_node")){
-			console.log("showItemControls", e.target);
-			cl.toggle("active");
-			//currentElem = e.target;
-		}
-*/
-	}
-
-	function hideItemControls(e) {
-		console.log("exited " + event.target.id + " for " + event.relatedTarget.id);
-/*
-		var cl = e.target.classList; 
-		if (cl.contains("item_node")){
-			console.log("hideItemControls", e.target);
-			cl.remove("active");
-			//currentElem = null;
-		}
-*/
-	}
 
 	return {
-		displayItem: displayItem,
-		setItemComplete: setItemComplete,
-		remove: remove,
-	}
+		Item: Item
+	};
+
 })();
 

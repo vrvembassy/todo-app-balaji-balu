@@ -1,5 +1,15 @@
 "# todo-app-balaji-balu"
 
+//fork a branch from master 
+git checkout branch -b stage2
+
+//push the code to branch
+git push origin stage2
+
+// pull request and commits
+
+// merge the branch to master 
+
 ## changes 
 
 ### v0.1
