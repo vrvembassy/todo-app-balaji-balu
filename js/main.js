@@ -1,14 +1,9 @@
-/*Todo: 
-	1. iife
-	2. lint this code
-
-	ref: https://tutorialzine.com/2014/06/10-tips-for-writing-javascript-without-jquery
-*/
-	"use strict;"
-
+/* global TodoItem */ 
 	var STATUS_NONE = "none",
 		STATUS_COMPLETE = "complete";
 		ID_LAST = 3;
+
+; (function(){
 
 	var itemsIndex = {
 		"1" : { id: "1", name: "Item 1", status: STATUS_NONE},
@@ -16,10 +11,11 @@
 		"3" : { id: "3", name: "Item 3", status: STATUS_NONE},
 	};
 
-	var $items, $input, $eraseBtn, $loadContentBtn;
+	var $input, $eraseBtn;
 
 	document.addEventListener("DOMContentLoaded", function(event) {
 		console.log("DOM fully loaded and parsed");
+
 		loadContent();
 	});
 
@@ -31,25 +27,23 @@
 		var containerNode = document.getElementsByClassName("container")[0]
 		containerNode.innerHTML = getHTML();
 
-		$items = document.getElementById("items"),
 		$input = document.getElementById("inputbox"),
 		$eraseBtn = document.getElementById("eraseContent");
 		$loadContentBtn = document.getElementById("loadContent");
 
 		// display the existing todo items
-		displayItems($items);
+		TodoItems.init();
+		
+		TodoItems.displayItems(itemsIndex);
 
 		//when new todo item is added
 		$input.addEventListener("keydown", addItem);
 		
-		// ul event listeners 
-		$items.addEventListener("click", itemsControls);	
 		$eraseBtn.addEventListener("click", eraseContent);
-
-		//$loadContentBtn.addEventListener("click", loadContent);
 		
 	}
-	
+
+
 	//Add Todo Item 
 	function addItem(key) {
 
@@ -78,18 +72,7 @@
 		itemsIndex[item.id] = item;
 
 		//refresh the DOM
-		displayItem($items, item);
-	}
-
-	// Items controls 
-	function itemsControls(e) {
-		console.log("clicked", e.target, e.target.classList);
-
-		if (e.target.classList.contains("delete")){
-			deleteItem(e.target);
-		} else if (e.target.classList.contains("setDone")){
-			setItemComplete(e.target);
-		}
+		TodoItems.displayItem(item);
 	}
 
 
@@ -103,22 +86,11 @@
 		$input.removeEventListener("keydown", addItem);
 		
 		// unregister ul event listeners 
-		$items.removeEventListener("click", itemsControls);	
-
-		$input = null;
-		$items = null;
+		TodoItems.remove();
 
 		//reset the DOM content
-		document.getElementsByClassName("container")[0].innerHTML = "";
+		document.querySelector(".container").innerHTML = "";
 	}	
-
-	//display all the items
-	function displayItems(itemsNode){
-		for (var id in itemsIndex) {
-			displayItem(itemsNode, itemsIndex[id]);
-		}
-	}
-
 
 	function getHTML() {
 		var html = [], index = 0;
@@ -136,4 +108,4 @@
 		return html.join("");
 	}
 
-		
+})();
