@@ -1,25 +1,13 @@
-/*Todo: 
-	1. iife
-	2. lint this code
+/* global TodoItem */ 
 
-	ref: https://tutorialzine.com/2014/06/10-tips-for-writing-javascript-without-jquery
-*/
-	"use strict;"
+; (function(){
 
-	var STATUS_NONE = "none",
-		STATUS_COMPLETE = "complete";
-		ID_LAST = 3;
-
-	var itemsIndex = {
-		"1" : { id: "1", name: "Item 1", status: STATUS_NONE},
-		"2" : { id: "2", name: "Item 2", status: STATUS_COMPLETE},
-		"3" : { id: "3", name: "Item 3", status: STATUS_NONE},
-	};
-
-	var $items, $input, $eraseBtn, $loadContentBtn;
+	var ID_LAST = 4;
+	var items, $input, $eraseBtn;
 
 	document.addEventListener("DOMContentLoaded", function(event) {
 		console.log("DOM fully loaded and parsed");
+		Save.init(addHandler);
 		loadContent();
 	});
 
@@ -31,25 +19,22 @@
 		var containerNode = document.getElementsByClassName("container")[0]
 		containerNode.innerHTML = getHTML();
 
-		$items = document.getElementById("items"),
 		$input = document.getElementById("inputbox"),
 		$eraseBtn = document.getElementById("eraseContent");
 		$loadContentBtn = document.getElementById("loadContent");
 
 		// display the existing todo items
-		displayItems($items);
+		items = new TodoItems.Items({});
+		//items.displayItems();
 
 		//when new todo item is added
 		$input.addEventListener("keydown", addItem);
 		
-		// ul event listeners 
-		$items.addEventListener("click", itemsControls);	
 		$eraseBtn.addEventListener("click", eraseContent);
-
-		//$loadContentBtn.addEventListener("click", loadContent);
-		
+		document.querySelector("#save").addEventListener("click", saveContent);
 	}
-	
+
+
 	//Add Todo Item 
 	function addItem(key) {
 
@@ -65,7 +50,7 @@
 			return;
 		}
 
-		var item = {id: ""+ ++ID_LAST, name: itemText, status: STATUS_NONE};
+		var item = {id: ""+ ++ID_LAST, name: itemText, status: false};
 
 		//reset the textbox content
 		$input.value = "";
@@ -75,23 +60,16 @@
 			return;
 		}
 
-		itemsIndex[item.id] = item;
+		//itemsIndex[item.id] = item;
+		Save.add(item);
 
 		//refresh the DOM
-		displayItem($items, item);
+		//items.add(item);
 	}
 
-	// Items controls 
-	function itemsControls(e) {
-		console.log("clicked", e.target, e.target.classList);
-
-		if (e.target.classList.contains("delete")){
-			deleteItem(e.target);
-		} else if (e.target.classList.contains("setDone")){
-			setItemComplete(e.target);
-		}
+	function addHandler(item) {
+		items.add(item);
 	}
-
 
 	function eraseContent(e) {
 		console.log("erase content");
@@ -103,22 +81,15 @@
 		$input.removeEventListener("keydown", addItem);
 		
 		// unregister ul event listeners 
-		$items.removeEventListener("click", itemsControls);	
-
-		$input = null;
-		$items = null;
+		items.remove();
 
 		//reset the DOM content
-		document.getElementsByClassName("container")[0].innerHTML = "";
+		document.querySelector(".container").innerHTML = "";
 	}	
 
-	//display all the items
-	function displayItems(itemsNode){
-		for (var id in itemsIndex) {
-			displayItem(itemsNode, itemsIndex[id]);
-		}
+	function saveContent(e) {
+		console.log("Collection:", items.toJson());
 	}
-
 
 	function getHTML() {
 		var html = [], index = 0;
@@ -131,9 +102,23 @@
 		html[index++] = "</div>";
 		html[index++] = "<ul id='items'></ul>";
 		html[index++] = "<div class='footer'>";
+		html[index++] = "<button id='save'>Save</button>";
 		html[index++] = "<button id='eraseContent'>Erase the content</button>";
 		html[index++] = "</div>";
 		return html.join("");
 	}
 
-		
+	function loadData() {
+/*		
+		return {
+			"1" : { id: "1", name: "Item 1", status: false},
+			"2" : { id: "2", name: "Item 2", status: true},
+			"3" : { id: "3", name: "Item 3", status: false},
+		};
+*/
+	}
+
+	function saveData(collection) {
+
+	}
+})();

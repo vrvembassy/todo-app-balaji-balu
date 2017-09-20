@@ -1,82 +1,90 @@
+/** 
+ * Todo Model and View
+*/
+var TodoItem = (function(){
+
+	function Item(item) {
+		//data 
+		this.model = item;
+		
+		this.handlers = [];
+		return this;
+	}
 
 	//display a new todo item 
-	function displayItem(itemsNode, item ) {
+	Item.prototype.displayItem = function() {
 		
-		//console.log("DisplayItem", itemsNode, item);
+		console.log("DisplayItem", this.model);
 
-		var nodeId = "item_" + item.id;
+		var nodeId = "item_" + this.model.id;
 
 		//create item node and append to the ul node	
 		var itemNode = document.createElement("div");
 		itemNode.id = nodeId; 
 		itemNode.classList.add("item_node");
-		if (item.status === STATUS_COMPLETE) {
+		if (this.model.status === true) {
 			itemNode.classList.add("complete");	
 		}
-		itemNode.innerHTML = getItemHTML(nodeId, item);
-		itemNode.addEventListener("mouseenter", showItemControls); //mouseenter
-		itemNode.addEventListener("mouseleave", hideItemControls); //mouseleave
 
-		itemsNode.prepend(itemNode); //add to top of the list
+		this.handlers.push({type: "mouseenter", fn: showItemControls});
+		this.handlers.push({type: "mouseleave", fn: hideItemControls});
+
+		itemNode.addEventListener("mouseenter", showItemControls);
+		itemNode.addEventListener("mouseleave", hideItemControls);
+		
+		itemNode.innerHTML = setTemplate(nodeId, this.toJson());
+		this.node = itemNode;
+
+		return this;
 	}
 
 	function showItemControls(e) {
-		//console.log("showItemControls", e.target);
-		if (e.target.classList.contains("item_node")){
-			e.target.classList.add("active");
-		}
+		this.classList.add("active");
 	}
 
 	function hideItemControls(e) {
-		if (e.target.classList.contains("item_node")){
-			//console.log("hideItemControls", e.target);
-			e.target.classList.remove("active");
-		}
+		this.classList.remove("active");
+	}
+
+	Item.prototype.toJson = function(){
+		return this.model;
 	}
 
 	// delete an todo item 
-	function deleteItem(node) {
-		console.log("delete item", node);
+	Item.prototype.remove = function() {
+		console.log("delete item");
 
 		var confirmation = confirm("Are you sure?")
 		if (confirmation == false) {
 			return;
 		}
 
-		//delete the element in the items array
-		var index = node.getAttribute("itemId");
-		delete itemsIndex[index];
-
 		// unregister event handler
-		var itemNode = document.getElementById(node.getAttribute("parentId"))
-		itemNode.removeEventListener("mouseenter", showItemControls); 
-		itemNode.removeEventListener("mouseleave", hideItemControls); 
+		this.handlers.forEach(function(handler){
+			document.removeEventListener(handler.type, handler.fn);
+		});
 
-		//delete the DOM node of this item
-		$items.removeChild(itemNode);
+		// remove the DOM element
+		this.node.parentNode.removeChild(this.node);
 
+		return this;
 	}
 
 	//mark an todo item as complete
-	function setItemComplete(node) {
-
-		var index = node.getAttribute("itemId");
-		console.log("complete", node, index);
-
+	Item.prototype.changeStatus = function(){
+		//console.log("ChangeStatus", this);
+		
 		//update item status
-		itemsIndex[index].status = (itemsIndex[index].status === STATUS_COMPLETE) ? 
-												STATUS_NONE : STATUS_COMPLETE; 
+		this.model.status = !this.model.status;
 
-		var itemNode= document.getElementById(node.getAttribute("parentId"));
-		var cl = itemNode.classList; 
-		if (cl.contains('complete'))
-			itemNode.classList.remove("complete");
-		else 
-			itemNode.classList.add("complete");
+		this.node.classList.toggle("complete");
+
+		return this;
 	}
 
+
 	// Item component Template
-	function getItemHTML(nodeId, item){
+	function setTemplate(nodeId, item) {
 		var html = [], index = 0;
 		
 		//construct the html string 
@@ -102,3 +110,11 @@
 
 		return html.join("");
 	}
+
+
+	return {
+		Item: Item
+	};
+
+})();
+
